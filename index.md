@@ -391,3 +391,7 @@ Claude Code 는 `atalk listen` 이 켜져 있어야 알림을 받습니다. 에�
 
 **Q. 웹 화면은 다른 PC 에서도 열 수 있나요?**
 아직은 이 PC(127.0.0.1)에서만 열립니다. 여러 PC 를 잇는 서버 모드는 준비 중입니다.
+
+---
+
+이 매뉴얼은 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ko) 라이선스로 배포됩니다. 출처(ATalk 사용자 매뉴얼, archi-duke)를 밝히면 자유롭게 복제·수정·배포할 수 있습니다.
