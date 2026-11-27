@@ -1,9 +1,6 @@
 ---
 title: ATalk 사용자 매뉴얼
 ---
----
-title: ATalk 사용자 매뉴얼
----
 
 # ATalk 사용자 매뉴얼
 
@@ -508,6 +505,37 @@ atalk remote web logout     # (호스트) 웹 로그인 모두 끊기
 - 설정과 허용 목록은 **이 PC 에서만** 바꿀 수 있습니다 (바깥 브라우저에서는 못 바꿈). 끄기: `atalk remote web google off`.
 - IP 주소로 들어와 구글 로그인을 누르면 설정한 도메인으로 옮겨 갑니다 (로그인은 주소마다 따로 기억되므로 도메인 하나로 쓰세요).
 - 1회용 코드 로그인은 접어 둔 채로 그대로 쓸 수 있습니다.
+
+#### 게이트웨이 뒤에 두기 (`https://도메인/atalk`, 443 하나로 여러 앱)
+
+공유기 바깥 포트를 **443 하나만** 열고, 게이트웨이(리버스 프록시, 예: [Caddy](https://caddyserver.com))가 주소의 앞 경로로 앱을 나누게 할 수 있습니다. 게이트웨이가 Let's Encrypt 인증서를 받으므로 **인증서 경고가 없습니다**.
+
+```
+인터넷 → 공유기 443 → 게이트웨이 PC :443 (Caddy)
+            /atalk/…  → ATalk 호스트 PC :원격포트
+            /다른앱/… → 다른 앱
+```
+
+Caddy 설정 예 (`Caddyfile`):
+
+```
+archi-duke.ddns.net {
+	redir /atalk /atalk/
+	handle_path /atalk/* {
+		reverse_proxy https://192.168.219.108:44310 {
+			header_up X-Forwarded-Prefix /atalk
+			transport http {
+				tls_insecure_skip_verify   # 공유기 안 구간: ATalk 인증서는 자체 서명(이름 없음)이라 이름 확인을 건너뜀 (암호화는 유지)
+			}
+		}
+	}
+}
+```
+
+- `handle_path` 가 `/atalk` 을 떼고 넘기고, `X-Forwarded-Prefix /atalk` 로 원래 경로를 알려 줍니다. ATalk 은 그 값으로 화면 요청·로그인 이동·쿠키 경로(`/atalk`)를 맞춥니다.
+- 구글 로그인은 `--base` 에 경로까지 넣습니다: `atalk remote web google <ID> --base https://도메인/atalk --callback /api/auth/callback/google` → 구글 콘솔 리디렉션 URI 는 `https://도메인/atalk/api/auth/callback/google`.
+- 다른 PC 의 에이전트는 지금처럼 공유기 안에서 호스트 PC 의 원격 포트로 직접 연결합니다 (게이트웨이를 거치지 않음).
+- 같은 도메인 아래 앱들은 브라우저에서 같은 출처입니다. 믿을 수 있는 앱만 같은 도메인에 두고, 남이 만든 앱은 하위 도메인으로 나누세요.
 
 ---
 
