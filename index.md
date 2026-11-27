@@ -1,6 +1,9 @@
 ---
 title: ATalk 사용자 매뉴얼
 ---
+---
+title: ATalk 사용자 매뉴얼
+---
 
 # ATalk 사용자 매뉴얼
 
@@ -472,7 +475,21 @@ atalk connect https://호스트주소:7421 --code 코드   # (에이전트 PC)
 - 두 PC 는 **같은 버전**으로 맞추세요. 새 버전을 받으면 양쪽 모두 다시 빌드하고 데몬을 다시 시작합니다.
 - 연결 끊기: 에이전트 PC 에서 `atalk disconnect` (방에서 나오고 그 PC 의 데몬으로 돌아감), 호스트에서 끊으려면 `atalk remote revoke 에이전트`.
 - 원격 포트 닫기: `atalk remote off`.
-- 웹 화면은 지금도 **호스트 PC(127.0.0.1)에서만** 열립니다.
+- 웹 화면은 기본으로 **호스트 PC(127.0.0.1)에서만** 열립니다. 바깥에서 브라우저로 쓰려면 아래 "바깥에서 웹 화면 열기" 를 보세요.
+
+### 바깥에서 웹 화면 열기 (휴대폰 등)
+
+원격 포트(HTTPS)로 브라우저에서 이 PC 의 웹 화면을 쓸 수 있습니다. 로그인 코드는 **호스트 PC 에서만** 받을 수 있습니다.
+
+```bash
+atalk remote web            # (호스트) 1회용 로그인 코드와 주소 — 한 번만, 10분
+atalk remote web logout     # (호스트) 웹 로그인 모두 끊기
+```
+
+1. 브라우저에서 `https://호스트주소:원격포트/login` 을 열고 코드를 넣습니다 (출력된 주소에 코드가 이미 들어 있음).
+2. 자체 서명 인증서라 처음 한 번 경고가 뜹니다. 인증서 지문은 `atalk remote status` 로 확인할 수 있습니다.
+3. 로그인은 그 브라우저에 30일 유지됩니다. 로그인한 브라우저는 호스트 PC 와 같은 권한이므로, 잃어버린 기기가 있으면 `atalk remote web logout` 으로 끊으세요.
+4. 공유기 밖에서 열려면 공유기에서 원격 포트를 이 PC 로 포트 포워딩하고 `https://공인IP:원격포트/login` 으로 엽니다.
 
 ---
 
@@ -582,6 +599,7 @@ atalk log SEQ received|working|done|skipped|failed "메모"
 ```bash
 atalk remote on | off | status                  # (호스트) 원격 포트 열기/닫기, 접속 주소·연결된 에이전트
 atalk remote code                               # (호스트) 참여 코드 발급 (한 번만, 10분)
+atalk remote web [logout]                       # (호스트) 바깥 브라우저용 웹 로그인 코드 / 로그인 모두 끊기
 atalk remote lobby on | off                     # (호스트) 대기실 받기 켜기/끄기
 atalk remote lobby kick AGENT                   # (호스트) 대기실 카드 내보내기
 atalk remote revoke AGENT                       # (호스트) 원격 에이전트 연결 끊기
