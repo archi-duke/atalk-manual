@@ -497,10 +497,10 @@ atalk remote web logout     # (호스트) 웹 로그인 모두 끊기
 
 매번 코드를 받는 대신, **이 PC 에 등록한 구글 계정**으로 로그인할 수 있습니다. 구글은 IP 주소로는 돌려보내지 않으므로 **도메인**(예: 무료 DDNS `내이름.ddns.net`)이 필요합니다.
 
-1. **구글 OAuth 클라이언트 만들기**: [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → 사용자 인증 정보 만들기 → **OAuth 클라이언트 ID** → 애플리케이션 유형 **웹 애플리케이션** → 승인된 리디렉션 URI 에 `https://도메인:원격포트/auth/google/callback` (처음이면 "OAuth 동의 화면" 을 먼저 만들고, 테스트 사용자에 로그인할 구글 계정을 넣습니다).
+1. **구글 OAuth 클라이언트 만들기**: [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → 사용자 인증 정보 만들기 → **OAuth 클라이언트 ID** → 애플리케이션 유형 **웹 애플리케이션** → 승인된 리디렉션 URI 에 `https://도메인:원격포트/auth/google/callback` (다른 경로로 등록했으면 아래 `--callback` 으로 같은 경로를 지정) (처음이면 "OAuth 동의 화면" 을 먼저 만들고, 테스트 사용자에 로그인할 구글 계정을 넣습니다).
 2. **이 PC 에 설정** (보안 비밀은 명령줄에 남지 않게 이어서 붙여 넣음):
    ```bash
-   atalk remote web google <클라이언트 ID> --base https://도메인:원격포트
+   atalk remote web google <클라이언트 ID> --base https://도메인:원격포트 [--callback /api/auth/callback/google]
    atalk remote web users add 내계정@gmail.com     # 들어올 수 있는 계정 (remove 로 빼기, 인자 없이 목록)
    ```
 3. 브라우저에서 `https://도메인:원격포트/` → **Google 계정으로 로그인**. 등록된 계정이면 바로 들어가고 30일 유지됩니다.
