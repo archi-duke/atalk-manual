@@ -506,6 +506,22 @@ atalk remote web logout     # (호스트) 웹 로그인 모두 끊기
 - IP 주소로 들어와 구글 로그인을 누르면 설정한 도메인으로 옮겨 갑니다 (로그인은 주소마다 따로 기억되므로 도메인 하나로 쓰세요).
 - 1회용 코드 로그인은 접어 둔 채로 그대로 쓸 수 있습니다.
 
+#### 사내 SSO 로 로그인 (ADFS/MobilAve 계약)
+
+사내망에서는 구글 대신 **사내 SSO**(ADFS/MobilAve 계약 2.0.0 — GoJIRA 와 같은 방식)로 로그인할 수 있습니다. 클라이언트 등록이나 보안 비밀 없이 SSO 주소만 있으면 됩니다.
+
+```bash
+atalk remote web sso http://SSO서버:포트 --base https://도메인[/경로] [--name "사내 SSO"]
+atalk remote web users add sso:duke.kimm      # 들어올 수 있는 SSO 아이디 (sso: 를 붙임)
+atalk remote web sso off                      # 끄기
+```
+
+- 흐름: **사내 SSO로 로그인** 버튼 → SSO `/Account/ADFSLogin` → `<base>/auth/sso/callback` 으로 돌아옴 → 이 PC 의 데몬이 SSO 에 직접 `/Account/exchange` (code → sessionToken), `/Account/introspect` (→ `loginid`) 로 확인 → 허용 목록에 `sso:<loginid>` 가 있으면 로그인 (30일).
+- 로그인 위조는 state 쿠키로 막고, code 교환·확인은 브라우저가 아니라 데몬이 합니다. 허용 목록에서 구글 이메일과 SSO 아이디는 섞이지 않습니다.
+- 구글과 함께 켜 두면 로그인 화면에 버튼이 둘 다 보입니다.
+- **기본으로 공유기 안에서 직접 연 화면에서만** 쓸 수 있습니다 (예: `https://192.168.219.108:44310/login`). 게이트웨이(Caddy)를 거친 바깥 접속에는 SSO 버튼이 없고 콜백도 받지 않습니다. 바깥에서도 쓰려면 `--gateway` 를 붙입니다. **SSO 서버가 code·토큰을 제대로 확인할 때만** 그렇게 하세요.
+- ⚠️ 시험용 목(Mock ADFS SSO, 관대 모드)은 **아무 code·토큰이나 받아 주고** `user=` 로 사용자를 고를 수 있습니다. 목을 쓰는 동안 그 SSO 로그인은 사실상 인증이 없으니, 목에는 `--gateway` 를 쓰지 말고 시험이 끝나면 `atalk remote web sso off` 로 끄세요.
+
 #### 게이트웨이 뒤에 두기 (`https://도메인/atalk`, 443 하나로 여러 앱)
 
 공유기 바깥 포트를 **443 하나만** 열고, 게이트웨이(리버스 프록시, 예: [Caddy](https://caddyserver.com))가 주소의 앞 경로로 앱을 나누게 할 수 있습니다. 게이트웨이가 Let's Encrypt 인증서를 받으므로 **인증서 경고가 없습니다**.
@@ -524,6 +540,7 @@ archi-duke.ddns.net {
 	handle_path /atalk/* {
 		reverse_proxy https://192.168.219.108:44310 {
 			header_up X-Forwarded-Prefix /atalk
+			header_up Host {host}      # https 업스트림이면 Caddy 가 Host 를 바꾸므로, 원래 주소를 그대로 넘김 (출처 확인·구글 로그인에 필요)
 			transport http {
 				tls_insecure_skip_verify   # 공유기 안 구간: ATalk 인증서는 자체 서명(이름 없음)이라 이름 확인을 건너뜀 (암호화는 유지)
 			}
